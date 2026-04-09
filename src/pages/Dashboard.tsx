@@ -4,13 +4,13 @@ import { useAuth, useOrders, useProducts } from "@/hooks/useStore";
 import AdminSidebar from "@/components/AdminSidebar";
 import DashboardTable from "@/components/DashboardTable";
 import ProductForm from "@/components/ProductForm";
-import { Product } from "@/data/products";
+import { Product, OrderStatus } from "@/data/products";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Menu, X, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, Menu, X, AlertTriangle, Info } from "lucide-react";
 
 const Dashboard = () => {
   const { isAdmin, logout } = useAuth();
-  const { orders, toggleStatus } = useOrders();
+  const { orders, updateStatus } = useOrders();
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
   const [tab, setTab] = useState<"orders" | "products">("orders");
   const [formOpen, setFormOpen] = useState(false);
@@ -38,17 +38,17 @@ const Dashboard = () => {
     toast.success("Product deleted.");
   };
 
-  const handleToggle = (id: string) => {
-    toggleStatus(id);
-    toast.success("Order status updated.");
+  const handleUpdateStatus = (id: string, status: OrderStatus) => {
+    updateStatus(id, status);
+    toast.success(`Order marked as ${status}.`);
   };
 
   const pendingCount = orders.filter((o) => o.status === "Pending").length;
-  const completedCount = orders.filter((o) => o.status === "Completed").length;
+  const contactedCount = orders.filter((o) => o.status === "Contacted").length;
+  const deliveredCount = orders.filter((o) => o.status === "Delivered").length;
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Mobile sidebar toggle */}
       <button
         className="fixed top-4 left-4 z-50 md:hidden bg-primary text-primary-foreground p-2 rounded"
         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -56,49 +56,42 @@ const Dashboard = () => {
         {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
       </button>
 
-      {/* Sidebar */}
       <div className={`fixed md:static inset-y-0 left-0 z-40 transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
         <AdminSidebar active={tab} onNavigate={(t) => { setTab(t); setSidebarOpen(false); }} onLogout={logout} />
       </div>
 
-      {/* Overlay */}
       {sidebarOpen && <div className="fixed inset-0 z-30 bg-foreground/30 md:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Content */}
       <main className="flex-1 p-6 md:p-10 overflow-auto">
-        {/* Welcome bar */}
-        <div className="mb-8 p-4 bg-muted/50 border border-border rounded-lg">
-          <p className="text-sm text-muted-foreground">
-            👋 Welcome to your admin panel. You can manage your products and view customer orders here.
-          </p>
+        {/* Owner guide */}
+        <div className="mb-8 p-4 bg-muted/50 border border-border rounded-lg flex gap-3 items-start">
+          <Info size={18} className="text-muted-foreground mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-medium mb-1">How to use your admin panel:</p>
+            <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-0.5">
+              <li>Add your products with photos and prices</li>
+              <li>Customers will place orders from the website</li>
+              <li>Contact customers and update order status here</li>
+            </ol>
+          </div>
         </div>
 
         {tab === "orders" ? (
           <div>
             <div className="mb-8">
               <h1 className="font-display text-3xl font-semibold">Orders</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {orders.length} total — {pendingCount} pending, {completedCount} completed
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">{orders.length} total orders</p>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="p-4 border border-border rounded-lg text-center">
-                <p className="text-2xl font-display font-semibold">{orders.length}</p>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">Total</p>
-              </div>
-              <div className="p-4 border border-border rounded-lg text-center">
-                <p className="text-2xl font-display font-semibold text-gold">{pendingCount}</p>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">Pending</p>
-              </div>
-              <div className="p-4 border border-border rounded-lg text-center">
-                <p className="text-2xl font-display font-semibold text-success">{completedCount}</p>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">Completed</p>
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <StatCard value={orders.length} label="Total" color="text-foreground" />
+              <StatCard value={pendingCount} label="Pending" color="text-gold" />
+              <StatCard value={contactedCount} label="Contacted" color="text-blue-600" />
+              <StatCard value={deliveredCount} label="Delivered" color="text-success" />
             </div>
 
-            <DashboardTable orders={orders} onToggle={handleToggle} />
+            <DashboardTable orders={orders} onUpdateStatus={handleUpdateStatus} />
           </div>
         ) : (
           <div>
@@ -129,6 +122,7 @@ const Dashboard = () => {
                       <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Name</th>
                       <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Price</th>
                       <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Category</th>
+                      <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Badge</th>
                       <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
@@ -139,8 +133,18 @@ const Dashboard = () => {
                           <img src={p.image} alt={p.name} className="w-14 h-14 object-cover rounded" loading="lazy" />
                         </td>
                         <td className="py-4 pr-4 font-medium">{p.name}</td>
-                        <td className="py-4 pr-4">NPR {p.price.toLocaleString()}</td>
+                        <td className="py-4 pr-4">
+                          Rs. {p.price.toLocaleString()}
+                          {p.originalPrice && (
+                            <span className="text-xs text-muted-foreground line-through ml-2">Rs. {p.originalPrice.toLocaleString()}</span>
+                          )}
+                        </td>
                         <td className="py-4 pr-4 capitalize">{p.category}</td>
+                        <td className="py-4 pr-4">
+                          {p.badge ? (
+                            <span className="text-[10px] uppercase tracking-wider bg-muted px-2 py-1 rounded">{p.badge}</span>
+                          ) : "—"}
+                        </td>
                         <td className="py-4">
                           <div className="flex gap-2">
                             <button
@@ -177,7 +181,6 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Delete confirmation modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setDeleteConfirm(null)} />
@@ -188,9 +191,7 @@ const Dashboard = () => {
             <h3 className="font-display text-xl font-semibold mb-2">Delete Product?</h3>
             <p className="text-sm text-muted-foreground mb-6">This action cannot be undone.</p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteConfirm(null)} className="fashion-btn-outline flex-1 text-xs">
-                Cancel
-              </button>
+              <button onClick={() => setDeleteConfirm(null)} className="fashion-btn-outline flex-1 text-xs">Cancel</button>
               <button
                 onClick={() => handleDelete(deleteConfirm)}
                 className="flex-1 text-xs font-medium uppercase tracking-widest px-6 py-3 bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity"
@@ -204,5 +205,14 @@ const Dashboard = () => {
     </div>
   );
 };
+
+function StatCard({ value, label, color }: { value: number; label: string; color: string }) {
+  return (
+    <div className="p-5 border border-border rounded-lg text-center">
+      <p className={`text-3xl font-display font-semibold ${color}`}>{value}</p>
+      <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">{label}</p>
+    </div>
+  );
+}
 
 export default Dashboard;

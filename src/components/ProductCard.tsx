@@ -1,4 +1,4 @@
-import { Product } from "@/data/products";
+import { Product, STORE_PHONE } from "@/data/products";
 import { MessageCircle } from "lucide-react";
 
 interface Props {
@@ -6,15 +6,23 @@ interface Props {
   onOrder: (product: Product) => void;
 }
 
-const STORE_PHONE = "9779800000000";
-
 const ProductCard = ({ product, onOrder }: Props) => {
   const whatsappLink = `https://wa.me/${STORE_PHONE}?text=${encodeURIComponent(
-    `Hi! I'm interested in: ${product.name} (NPR ${product.price.toLocaleString()}). Can I order?`
+    `Hi! I'm interested in: ${product.name} (Rs. ${product.price.toLocaleString()}). Can I order?`
   )}`;
 
   return (
-    <div className="fashion-card group">
+    <div className="fashion-card group relative">
+      {/* Badge */}
+      {product.badge && (
+        <span className={`absolute top-3 left-3 z-10 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 ${
+          product.badge === "Best Seller" ? "bg-primary text-primary-foreground" :
+          product.badge === "Trending" ? "bg-gold text-gold-foreground" :
+          "bg-foreground/80 text-background"
+        }`}>
+          {product.badge}
+        </span>
+      )}
       <div className="aspect-[4/5] overflow-hidden bg-muted">
         <img
           src={product.image}
@@ -28,7 +36,12 @@ const ProductCard = ({ product, onOrder }: Props) => {
           {product.category}
         </p>
         <h3 className="font-display text-lg font-medium leading-tight">{product.name}</h3>
-        <p className="text-sm font-medium">NPR {product.price.toLocaleString()}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-semibold">Rs. {product.price.toLocaleString()}</p>
+          {product.originalPrice && (
+            <p className="text-xs text-muted-foreground line-through">Rs. {product.originalPrice.toLocaleString()}</p>
+          )}
+        </div>
         <div className="flex gap-2 pt-1">
           <button
             onClick={() => onOrder(product)}
