@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Product, Order, defaultProducts } from "@/data/products";
+import { Product, Order, OrderStatus, defaultProducts } from "@/data/products";
 
 function loadFromStorage<T>(key: string, fallback: T): T {
   try {
@@ -53,17 +53,26 @@ export function useOrders() {
     setOrders((prev) => [order, ...prev]);
   }, []);
 
-  const toggleStatus = useCallback((id: string) => {
+  const updateStatus = useCallback((id: string, status: OrderStatus) => {
     setOrders((prev) =>
-      prev.map((o) =>
-        o.id === id
-          ? { ...o, status: o.status === "Pending" ? "Completed" : "Pending" }
-          : o
-      )
+      prev.map((o) => (o.id === id ? { ...o, status } : o))
     );
   }, []);
 
-  return { orders, addOrder, toggleStatus };
+  // Keep backward compat
+  const toggleStatus = useCallback((id: string) => {
+    setOrders((prev) =>
+      prev.map((o) => {
+        if (o.id !== id) return o;
+        const next: OrderStatus =
+          o.status === "Pending" ? "Contacted" :
+          o.status === "Contacted" ? "Delivered" : "Pending";
+        return { ...o, status: next };
+      })
+    );
+  }, []);
+
+  return { orders, addOrder, updateStatus, toggleStatus };
 }
 
 export function useAuth() {

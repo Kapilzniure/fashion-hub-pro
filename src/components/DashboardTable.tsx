@@ -1,14 +1,20 @@
-import { Order } from "@/data/products";
-import { CheckCircle, Clock, MessageCircle, Phone } from "lucide-react";
+import { Order, OrderStatus, STORE_PHONE } from "@/data/products";
+import { CheckCircle, Clock, Phone, MessageCircle, Truck } from "lucide-react";
 
 interface Props {
   orders: Order[];
-  onToggle: (id: string) => void;
+  onUpdateStatus: (id: string, status: OrderStatus) => void;
 }
 
-const STORE_PHONE = "9779800000000";
+const statusConfig: Record<OrderStatus, { icon: typeof Clock; color: string; label: string }> = {
+  Pending: { icon: Clock, color: "bg-gold/10 text-gold", label: "Pending" },
+  Contacted: { icon: Phone, color: "bg-blue-500/10 text-blue-600", label: "Contacted" },
+  Delivered: { icon: CheckCircle, color: "bg-success/10 text-success", label: "Delivered" },
+};
 
-const DashboardTable = ({ orders, onToggle }: Props) => {
+const statusFlow: OrderStatus[] = ["Pending", "Contacted", "Delivered"];
+
+const DashboardTable = ({ orders, onUpdateStatus }: Props) => {
   if (orders.length === 0) {
     return (
       <div className="text-center py-20 text-muted-foreground border border-dashed border-border rounded-lg">
@@ -26,6 +32,17 @@ const DashboardTable = ({ orders, onToggle }: Props) => {
     )}`;
   };
 
+  const getNextStatus = (current: OrderStatus): OrderStatus | null => {
+    const idx = statusFlow.indexOf(current);
+    return idx < statusFlow.length - 1 ? statusFlow[idx + 1] : null;
+  };
+
+  const getNextLabel = (current: OrderStatus): string => {
+    if (current === "Pending") return "Mark Contacted";
+    if (current === "Contacted") return "Mark Delivered";
+    return "";
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -35,62 +52,68 @@ const DashboardTable = ({ orders, onToggle }: Props) => {
             <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Product</th>
             <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Size</th>
             <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Phone</th>
-            <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Message</th>
+            <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Note</th>
             <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Status</th>
             <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Date</th>
             <th className="pb-4 font-medium text-xs uppercase tracking-widest text-muted-foreground">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {orders.map((o) => (
-            <tr key={o.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-              <td className="py-5 pr-4 font-medium">{o.customerName}</td>
-              <td className="py-5 pr-4">{o.productName}</td>
-              <td className="py-5 pr-4">{o.size}</td>
-              <td className="py-5 pr-4 text-muted-foreground">{o.phone || "—"}</td>
-              <td className="py-5 pr-4 text-muted-foreground max-w-[150px] truncate">{o.message || "—"}</td>
-              <td className="py-5 pr-4">
-                <span
-                  className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full ${
-                    o.status === "Completed"
-                      ? "bg-success/10 text-success"
-                      : "bg-gold/10 text-gold"
-                  }`}
-                >
-                  {o.status === "Completed" ? <CheckCircle size={12} /> : <Clock size={12} />}
-                  {o.status}
-                </span>
-              </td>
-              <td className="py-5 pr-4 text-muted-foreground text-xs">
-                {new Date(o.createdAt).toLocaleDateString()}
-              </td>
-              <td className="py-5">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => onToggle(o.id)}
-                    className={`text-xs font-medium px-3 py-1.5 rounded transition-colors ${
-                      o.status === "Pending"
-                        ? "bg-primary text-primary-foreground hover:opacity-90"
-                        : "bg-muted text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {o.status === "Pending" ? "✓ Complete" : "Reopen"}
-                  </button>
-                  {o.phone && (
-                    <a
-                      href={getWhatsAppLink(o)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded hover:bg-muted"
-                      title="Contact on WhatsApp"
-                    >
-                      <MessageCircle size={14} />
-                    </a>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
+          {orders.map((o) => {
+            const cfg = statusConfig[o.status] || statusConfig.Pending;
+            const StatusIcon = cfg.icon;
+            const nextStatus = getNextStatus(o.status);
+
+            return (
+              <tr key={o.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                <td className="py-5 pr-4 font-medium">{o.customerName}</td>
+                <td className="py-5 pr-4">{o.productName}</td>
+                <td className="py-5 pr-4">{o.size}</td>
+                <td className="py-5 pr-4 text-muted-foreground">{o.phone || "—"}</td>
+                <td className="py-5 pr-4 text-muted-foreground max-w-[120px] truncate text-xs">{o.message || "—"}</td>
+                <td className="py-5 pr-4">
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full ${cfg.color}`}>
+                    <StatusIcon size={12} />
+                    {cfg.label}
+                  </span>
+                </td>
+                <td className="py-5 pr-4 text-muted-foreground text-xs whitespace-nowrap">
+                  {new Date(o.createdAt).toLocaleDateString()}
+                </td>
+                <td className="py-5">
+                  <div className="flex items-center gap-2">
+                    {nextStatus && (
+                      <button
+                        onClick={() => onUpdateStatus(o.id, nextStatus)}
+                        className="text-xs font-medium px-3 py-1.5 rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity whitespace-nowrap"
+                      >
+                        {getNextLabel(o.status)}
+                      </button>
+                    )}
+                    {o.status === "Delivered" && (
+                      <button
+                        onClick={() => onUpdateStatus(o.id, "Pending")}
+                        className="text-xs font-medium px-3 py-1.5 rounded bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Reset
+                      </button>
+                    )}
+                    {o.phone && (
+                      <a
+                        href={getWhatsAppLink(o)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded hover:bg-muted"
+                        title="Contact on WhatsApp"
+                      >
+                        <MessageCircle size={14} />
+                      </a>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
