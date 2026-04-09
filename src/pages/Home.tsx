@@ -306,20 +306,45 @@ const Home = () => {
 
       {/* ═══════════ CONTACT / SOCIAL ═══════════ */}
       <section className="py-24 bg-primary text-primary-foreground">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <p className="text-primary-foreground/50 text-xs uppercase tracking-[0.3em] mb-4">Get In Touch</p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold mb-4">Follow Us & Stay Updated</h2>
-          <p className="text-primary-foreground/60 max-w-lg mx-auto mb-10">
-            DM us on Instagram or WhatsApp to place custom orders, ask questions, or just say hi!
-          </p>
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <p className="text-primary-foreground/50 text-xs uppercase tracking-[0.3em] mb-4">Get In Touch</p>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold mb-4">Contact Us</h2>
+            <p className="text-primary-foreground/60 max-w-lg mx-auto">
+              Fashion Hub Chitwan offers stylish and affordable fashion for everyday wear. Reach out anytime!
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full border border-primary-foreground/20 flex items-center justify-center">
+                <Phone size={20} />
+              </div>
+              <p className="text-sm font-medium mb-1">Phone</p>
+              <p className="text-primary-foreground/60 text-sm">{STORE_DISPLAY_PHONE}</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full border border-primary-foreground/20 flex items-center justify-center">
+                <MapPin size={20} />
+              </div>
+              <p className="text-sm font-medium mb-1">Location</p>
+              <p className="text-primary-foreground/60 text-sm">{STORE_LOCATION}</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full border border-primary-foreground/20 flex items-center justify-center">
+                <Instagram size={20} />
+              </div>
+              <p className="text-sm font-medium mb-1">Instagram</p>
+              <a href={STORE_INSTAGRAM} target="_blank" rel="noopener noreferrer" className="text-primary-foreground/60 text-sm hover:text-primary-foreground transition-colors">@fashionhubchitwan</a>
+            </div>
+          </div>
           <div className="flex items-center justify-center gap-6">
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/10 transition-colors">
+            <a href={STORE_INSTAGRAM} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/10 transition-colors">
               <Instagram size={22} />
             </a>
             <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/10 transition-colors">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
             </a>
-            <a href="https://wa.me/9779800000000" target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/10 transition-colors">
+            <a href={`https://wa.me/${STORE_PHONE}`} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-full border border-primary-foreground/20 flex items-center justify-center hover:bg-primary-foreground/10 transition-colors">
               <MessageCircle size={22} />
             </a>
           </div>
