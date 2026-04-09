@@ -11,25 +11,36 @@ interface Props {
 const ProductForm = ({ product, onSave, onCancel }: Props) => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
+  const [originalPrice, setOriginalPrice] = useState("");
   const [image, setImage] = useState("");
   const [category, setCategory] = useState<Product["category"]>("tshirt");
+  const [badge, setBadge] = useState<Product["badge"] | "">("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (product) {
       setName(product.name);
       setPrice(String(product.price));
+      setOriginalPrice(product.originalPrice ? String(product.originalPrice) : "");
       setImage(product.image);
       setCategory(product.category);
+      setBadge(product.badge || "");
     }
   }, [product]);
 
   const handleSubmit = () => {
     if (!name.trim() || !price || !image.trim()) {
-      setError("All fields are required.");
+      setError("Name, price and image are required.");
       return;
     }
-    onSave({ name: name.trim(), price: Number(price), image: image.trim(), category });
+    onSave({
+      name: name.trim(),
+      price: Number(price),
+      originalPrice: originalPrice ? Number(originalPrice) : undefined,
+      image: image.trim(),
+      category,
+      badge: badge || undefined,
+    });
   };
 
   return (
@@ -44,7 +55,7 @@ const ProductForm = ({ product, onSave, onCancel }: Props) => {
           {product ? "Edit Product" : "Add New Product"}
         </h2>
         <p className="text-sm text-muted-foreground mb-6">
-          {product ? "Update the product details below." : "Fill in the details to add a new product to your store."}
+          {product ? "Update the product details below." : "Fill in the details to add a new product."}
         </p>
 
         <div className="space-y-5">
@@ -52,39 +63,48 @@ const ProductForm = ({ product, onSave, onCancel }: Props) => {
             <label className="fashion-label">Product Name</label>
             <input value={name} onChange={(e) => { setName(e.target.value); setError(""); }} className="fashion-input" placeholder="e.g. Classic Black Hoodie" />
           </div>
-          <div>
-            <label className="fashion-label">Price (NPR)</label>
-            <input type="number" value={price} onChange={(e) => { setPrice(e.target.value); setError(""); }} className="fashion-input" placeholder="e.g. 2500" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="fashion-label">Price (Rs.)</label>
+              <input type="number" value={price} onChange={(e) => { setPrice(e.target.value); setError(""); }} className="fashion-input" placeholder="2500" />
+            </div>
+            <div>
+              <label className="fashion-label">Original Price (optional)</label>
+              <input type="number" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} className="fashion-input" placeholder="3000" />
+            </div>
           </div>
           <div>
             <label className="fashion-label">Image URL</label>
             <input value={image} onChange={(e) => { setImage(e.target.value); setError(""); }} className="fashion-input" placeholder="https://example.com/image.jpg" />
             {image && (
               <div className="mt-3 border border-border rounded overflow-hidden">
-                <img
-                  src={image}
-                  alt="Preview"
-                  className="w-full h-32 object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
+                <img src={image} alt="Preview" className="w-full h-32 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               </div>
             )}
             {!image && (
               <div className="mt-3 border border-dashed border-border rounded h-32 flex items-center justify-center text-muted-foreground/40">
-                <div className="text-center">
-                  <ImageIcon size={24} className="mx-auto mb-1" />
-                  <p className="text-xs">Image preview</p>
-                </div>
+                <div className="text-center"><ImageIcon size={24} className="mx-auto mb-1" /><p className="text-xs">Image preview</p></div>
               </div>
             )}
           </div>
-          <div>
-            <label className="fashion-label">Category</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value as Product["category"])} className="fashion-input">
-              <option value="hoodie">Hoodie</option>
-              <option value="tshirt">T-Shirt</option>
-              <option value="jacket">Jacket</option>
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="fashion-label">Category</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value as Product["category"])} className="fashion-input">
+                <option value="hoodie">Hoodie</option>
+                <option value="tshirt">T-Shirt</option>
+                <option value="jacket">Jacket</option>
+              </select>
+            </div>
+            <div>
+              <label className="fashion-label">Badge (optional)</label>
+              <select value={badge} onChange={(e) => setBadge(e.target.value as Product["badge"])} className="fashion-input">
+                <option value="">None</option>
+                <option value="Best Seller">Best Seller</option>
+                <option value="Trending">Trending</option>
+                <option value="New">New</option>
+              </select>
+            </div>
           </div>
 
           {error && <p className="text-destructive text-sm">{error}</p>}
