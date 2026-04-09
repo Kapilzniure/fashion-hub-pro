@@ -6,6 +6,7 @@ import heroImage from "@/assets/hero-fashion.jpg";
 import lifestyle1 from "@/assets/lifestyle-1.jpg";
 import lifestyle2 from "@/assets/lifestyle-2.jpg";
 import lifestyle3 from "@/assets/lifestyle-3.jpg";
+import { STORE_PHONE, STORE_INSTAGRAM, STORE_LOCATION, STORE_DISPLAY_PHONE } from "@/data/products";
 import {
   Truck,
   ShieldCheck,
@@ -16,6 +17,9 @@ import {
   MessageCircle,
   ArrowRight,
   ChevronRight,
+  MapPin,
+  Phone,
+  Store,
 } from "lucide-react";
 
 const Home = () => {
