@@ -20,6 +20,8 @@ export interface Order {
   productName: string;
   size: string;
   customerName: string;
+  phone: string;
+  message: string;
   status: "Pending" | "Completed";
   createdAt: string;
 }

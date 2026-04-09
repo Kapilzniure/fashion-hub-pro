@@ -15,9 +15,14 @@ const Products = () => {
 
   const filtered = category === "all" ? products : products.filter((p) => p.category === category);
 
-  const handleOrder = (data: { productName: string; customerName: string; size: string }) => {
+  const handleOrder = (data: {
+    productName: string;
+    customerName: string;
+    size: string;
+    phone: string;
+    message: string;
+  }) => {
     addOrder(data);
-    setSelectedProduct(null);
     toast.success("Order placed successfully!");
   };
 
