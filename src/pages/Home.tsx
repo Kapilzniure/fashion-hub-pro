@@ -101,6 +101,16 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ═══════════ ABOUT / TRUST STRIP ═══════════ */}
+      <section className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-wrap items-center justify-center gap-6 md:gap-12 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-2"><Truck size={16} /> Cash on Delivery</span>
+          <span className="inline-flex items-center gap-2"><ShieldCheck size={16} /> Premium Quality</span>
+          <span className="inline-flex items-center gap-2"><Phone size={16} /> Fast Response</span>
+          <span className="inline-flex items-center gap-2"><Store size={16} /> Local Store — Chitwan</span>
+        </div>
+      </section>
+
       {/* ═══════════ TRENDING NOW ═══════════ */}
       <section className="max-w-7xl mx-auto px-6 py-24">
         <div className="flex items-end justify-between mb-12">
